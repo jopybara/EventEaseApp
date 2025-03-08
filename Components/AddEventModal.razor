@@ -1,0 +1,87 @@
+@inject LocalStorageService LocalStorageService
+@inject NavigationManager Navigation
+
+<div id="myModal" class="modal @showClass">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Event</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="newEvent" OnValidSubmit="AddEventAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-grid">
+                        <label for="name">Name:</label>
+                        <InputText id="name" @bind-Value="newEvent.Name" />
+
+                        <label for="date">Date:</label>
+                        <InputDate id="date" @bind-Value="newEvent.Date" />
+
+                        <label for="location">Location:</label>
+                        <InputText id="location" @bind-Value="newEvent.Location" />
+
+                        <label for="description">Description:</label>
+                        <InputTextArea id="description" @bind-Value="newEvent.Description" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Event</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isVisible = false;
+    private Event newEvent = new Event { Id = Guid.NewGuid(), Date = DateTime.Now };
+
+    private string showClass => isVisible ? "show" : "";
+
+    [Parameter]
+    public EventCallback OnEventAdded { get; set; }
+
+    public void Show()
+    {
+        isVisible = true;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        isVisible = false;
+        StateHasChanged();
+    }
+
+    private void Close()
+    {
+        isVisible = false;
+        StateHasChanged();
+    }
+
+    private async Task AddEventAsync()
+    {
+        string eventsJson = await LocalStorageService.GetItemAsync("events");
+        
+        try
+        {
+            List<Event> events = string.IsNullOrEmpty(eventsJson) ? [] : JsonSerializer.Deserialize<List<Event>>(eventsJson) ?? [];
+
+            events.Add(newEvent);
+
+            eventsJson = JsonSerializer.Serialize(events);
+            await LocalStorageService.SetItemAsync("events", eventsJson);
+
+            await OnEventAdded.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+        }
+        finally 
+        {
+            Hide();
+        }
+    }
+}

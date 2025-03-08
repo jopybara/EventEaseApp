@@ -1,0 +1,29 @@
+@page "/session"
+@inject SessionStateService SessionState
+
+<h1>User Session</h1>
+<p>Current User: @userSession</p>
+
+<button @onclick="SetSessionState">Set User Session</button>
+<button @onclick="RemoveSessionState">Remove User Session</button>
+
+@code {
+    private string userSession;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userSession = await SessionState.GetSessionStateAsync("user");
+    }
+
+    private async Task SetSessionState()
+    {
+        await SessionState.SetSessionStateAsync("user", "JohnDoe");
+        userSession = await SessionState.GetSessionStateAsync("user");
+    }
+
+    private async Task RemoveSessionState()
+    {
+        await SessionState.RemoveSessionStateAsync("user");
+        userSession = null;
+    }
+}

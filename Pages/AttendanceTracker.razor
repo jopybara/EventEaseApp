@@ -1,0 +1,38 @@
+@page "/attendance-tracker/{eventId:guid}"
+@inject LocalStorageService LocalStorageService
+
+<h3>Attendance Tracker</h3>
+
+@if (registrations != null)
+{
+    <ul>
+        @foreach (var registration in registrations)
+        {
+            <li>@registration.Name - @registration.Email</li>
+        }
+    </ul>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    [Parameter]
+    public Guid EventId { get; set; }
+
+    private List<Registration> registrations = new List<Registration>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            string registrationsJson = await LocalStorageService.GetItemAsync($"registrations_{EventId}");
+            registrations = string.IsNullOrEmpty(registrationsJson) ? [] : JsonSerializer.Deserialize<List<Registration>>(registrationsJson) ?? [];
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+        }
+    }
+}

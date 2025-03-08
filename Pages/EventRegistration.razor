@@ -1,0 +1,53 @@
+@page "/event-registration/{eventId:guid}"
+@inject LocalStorageService LocalStorageService
+@inject NavigationManager Navigation
+
+<h3>Register for Event</h3>
+
+<EditForm Model="registration" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="name">Name:</label>
+        <InputText id="name" @bind-Value="registration.Name" />
+    </div>
+    <div>
+        <label for="email">Email:</label>
+        <InputText id="email" @bind-Value="registration.Email" />
+    </div>
+    <div>
+        <label for="phone">Phone:</label>
+        <InputText id="phone" @bind-Value="registration.Phone" />
+    </div>
+    <button type="submit">Register</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public Guid EventId { get; set; }
+
+    private Registration registration = new Registration();
+
+    private async Task HandleValidSubmit()
+    {
+        string registrationsJson = await LocalStorageService.GetItemAsync($"registrations_{EventId}");
+        
+        try 
+        {
+            List<Registration> registrations = string.IsNullOrEmpty(registrationsJson) ? [] 
+                : JsonSerializer.Deserialize<List<Registration>>(registrationsJson) ?? [];
+            
+            registrations.Add(registration);
+            registrationsJson = JsonSerializer.Serialize(registrations);
+            
+            await LocalStorageService.SetItemAsync($"registrations_{EventId}", registrationsJson);
+
+            Navigation.NavigateTo($"/event-details/{EventId}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+        }
+    }
+}

@@ -1,0 +1,25 @@
+@page "/events"
+@inject LocalStorageService LocalStorageService
+
+<h3>Event List</h3>
+<button @onclick="ShowAddEventModal">Add Event</button>
+
+@if (events is null)
+{
+    <p>Loading...</p>
+}
+else if (events.Count == 0)
+{
+    <p>No event found.</p>
+}
+else 
+{
+    <div class="events">
+        @foreach (Event eventItem in events)
+        {
+            <EventCard Event="@eventItem" />
+        }
+    </div>
+}
+
+<AddEventModal @ref="addEventModal" OnEventAdded="LoadEventsAsync" />

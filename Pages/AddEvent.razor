@@ -1,0 +1,53 @@
+@page "/add-event"
+@inject LocalStorageService LocalStorageService
+@inject NavigationManager Navigation
+
+<h3>Add New Event</h3>
+
+<EditForm Model="newEvent" OnValidSubmit="AddEventAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="name">Name:</label>
+        <InputText id="name" @bind-Value="newEvent.Name" />
+    </div>
+    <div>
+        <label for="date">Date:</label>
+        <InputDate id="date" @bind-Value="newEvent.Date" />
+    </div>
+    <div>
+        <label for="location">Location:</label>
+        <InputText id="location" @bind-Value="newEvent.Location" />
+    </div>
+    <div>
+        <label for="description">Description:</label>
+        <InputTextArea id="description" @bind-Value="newEvent.Description" />
+    </div>
+    <button type="submit">Add Event</button>
+</EditForm>
+
+@code {
+    private Event newEvent = new Event();
+
+    private async Task AddEventAsync()
+    {
+        try
+        {
+            string eventsJson = await LocalStorageService.GetItemAsync("events");
+            List<Event> events = string.IsNullOrEmpty(eventsJson) ? [] : JsonSerializer.Deserialize<List<Event>>(eventsJson) ?? [];
+
+            newEvent.Id = Guid.NewGuid();
+            events.Add(newEvent);
+
+            eventsJson = JsonSerializer.Serialize(events);
+            await LocalStorageService.SetItemAsync("events", eventsJson);
+
+            Navigation.NavigateTo("/events");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+        }
+    }
+}

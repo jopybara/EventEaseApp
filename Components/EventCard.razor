@@ -1,0 +1,13 @@
+<div class="event-card">
+    <h3>@Event.Name</h3>
+    <p>Date: @Event.Date.ToShortDateString()</p>
+    <p>Location: @Event.Location</p>
+    <NavLink href="@($"/event-details/{Event.Id}")">View Details</NavLink>
+    <NavLink href="@($"/event-registration/{Event.Id}")">Register</NavLink>
+    <NavLink href="@($"/attendance-tracker/{Event.Id}")">Attendance Tracker</NavLink>
+</div>
+
+@code {
+    [Parameter]
+    public Event Event { get; set; }
+}

@@ -1,0 +1,31 @@
+@page "/event-details/{eventId:guid}"
+@inject LocalStorageService LocalStorageService
+
+<h1>@eventDetails?.Name</h1>
+<p>Date: @eventDetails?.Date.ToShortDateString()</p>
+<p>Location: @eventDetails?.Location</p>
+<p>@eventDetails?.Description</p>
+
+@code {
+    [Parameter]
+    public Guid EventId { get; set; }
+
+    private Event eventDetails;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            string eventsJson = await LocalStorageService.GetItemAsync("events");
+            if (!string.IsNullOrEmpty(eventsJson))
+            {
+                List<Event> events = JsonSerializer.Deserialize<List<Event>>(eventsJson);
+                eventDetails = events.FirstOrDefault(e => e.Id == EventId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+        }
+    }
+}
